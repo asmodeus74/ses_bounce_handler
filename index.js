@@ -32,7 +32,6 @@ exports.handler = function(event, context) {
       SesError: {S: SesFailedCode},
       SesNotificationTimestamp: {S: SesNotificationTimestamp},
       SesNotificationfeedbackId: {S: SesNotificationfeedbackId},
-      LambdaReceiveTime: {S: LambdaReceiveTime},
       SnsMessage: {S: SnsMessage}
     }
   };
