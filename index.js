@@ -6,15 +6,13 @@ exports.handler = function(event, context) {
   var SnsMessage = event.Records[0].Sns.Message;
   var LambdaReceiveTime = new Date().toString();
   var MessageContent = JSON.parse(SnsMessage);
-  console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
+  //console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
   parseMessageContent(null, MessageContent, putSuppressedItem);
 
 
   function parseMessageContent(err, message, callback) {
-    console.log("parseMessageContent");   //DEBUG
     var items = [];
     if (message.notificationType == "Bounce") {
-      console.log("Bounce");    //DEBUG
       for(var i=0, len=message.bounce.bouncedRecipients.length; i<len; i++ ) {
         items[i] = {
           Item: {
@@ -31,7 +29,6 @@ exports.handler = function(event, context) {
       }
       callback(items);
     } else if (message.notificationType == "Complaint") {
-      console.log("Complaint");   //DEBUG
       for(var i=0, len=message.complaint.complainedRecipients.length; i<len; i++ ) {
         items[i] = {
           Item: {
@@ -48,18 +45,14 @@ exports.handler = function(event, context) {
       }
       callback(items);
     } else {
-      console.log("No Bounce, No Complaint");   //DEBUG
       context.done(null,'');
     }
   } //parseMessageContent
 
   function stripThans(item, callback) {
-    console.log("stripThans: "+item);   //DEBUG
     if(item.indexOf('<')==0 && item.indexOf('>')==item.length-1) {
-      console.log("Thans found.");    //DEBUG
       item=item.substring(1,item.length-1);
     }
-    console.log("Stripped: "+item);   //DEBUG
     return item;
   } //stripThans
 
@@ -71,7 +64,6 @@ exports.handler = function(event, context) {
 
   function putSuppressedItem(items, callback) {
     for(var j=0, lenj=items.length; j<lenj; j++) {
-      console.log("putItem: "+JSON.stringify(items[j], null, 2));    //DEBUG
       ddb.putItem(items[j], function(err,data) {
         if (err) {
           console.log('error','putting item in dynamodb failed: '+err);
