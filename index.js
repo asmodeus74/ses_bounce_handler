@@ -56,8 +56,10 @@ exports.handler = function(event, context) {
   function stripThans(item, callback) {
     console.log("stripThans: "+item);   //DEBUG
     if(item.indexOf('<')==0 && item.indexOf('>')==item.length-1) {
+      console.log("Thans found.");    //DEBUG
       item=item.substring(1,item.length-1);
     }
+    console.log("Stripped: "+item);   //DEBUG
     return item;
   } //stripThans
 
