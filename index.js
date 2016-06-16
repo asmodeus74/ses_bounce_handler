@@ -25,7 +25,7 @@ exports.handler = function(event, context) {
             SesError: {S: message.bounce.bouncedRecipients[i].diagnosticCode},
             SesNotificationTimestamp: {S: message.bounce.timestamp},
             SesNotificationfeedbackId: {S: message.bounce.feedbackId},
-            SnsMessage: {S: message}
+            SnsMessage: {S: JSON.stringify(message, null, 2)}
           }
         };
       }
@@ -42,7 +42,7 @@ exports.handler = function(event, context) {
             SesError: {S: message.complaint.complaintFeedbackType},
             SesNotificationTimestamp: {S: message.bounce.timestamp},
             SesNotificationfeedbackId: {S: message.bounce.feedbackId},
-            SnsMessage: {S: message}
+            SnsMessage: {S: JSON.stringify(message, null, 2)}
           }
         };
       }
