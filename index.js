@@ -40,8 +40,8 @@ exports.handler = function(event, context) {
             SesMessageId: {S: message.mail.messageId},
             SesNotificationType: {S: message.notificationType},
             SesError: {S: message.complaint.complaintFeedbackType},
-            SesNotificationTimestamp: {S: message.bounce.timestamp},
-            SesNotificationfeedbackId: {S: message.bounce.feedbackId},
+            SesNotificationTimestamp: {S: message.complaint.timestamp},
+            SesNotificationfeedbackId: {S: message.complaint.feedbackId},
             SnsMessage: {S: JSON.stringify(message, null, 2)}
           }
         };
