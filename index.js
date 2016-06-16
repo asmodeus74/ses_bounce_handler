@@ -1,48 +1,77 @@
 var aws = require('aws-sdk');
 var ddb = new aws.DynamoDB({params: {TableName: 'SesSuppressionList'}});
+var getEmails = require('get-emails');
 
 exports.handler = function(event, context) {
   var SnsMessage = event.Records[0].Sns.Message;
   var LambdaReceiveTime = new Date().toString();
   var MessageContent = JSON.parse(SnsMessage);
   console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
-  var SesNotify = MessageContent.notificationType;
-  if (SesNotify == "Bounce") {
-    var SesFailedTarget = MessageContent.bounce.bouncedRecipients[0].emailAddress;
-    var SesFailedCode = MessageContent.bounce.bouncedRecipients[0].diagnosticCode;
-    var SesNotificationTimestamp = MessageContent.bounce.timestamp;
-    var SesNotificationfeedbackId = MessageContent.bounce.feedbackId;
-  } else if (SesNotify == "Complaint") {
-    var SesFailedTarget = MessageContent.complaint.complainedRecipients[0].emailAddress;
-    var SesFailedCode = MessageContent.complaint.complaintFeedbackType;
-    var SesNotificationTimestamp = MessageContent.complaint.timestamp;
-    var SesNotificationfeedbackId = MessageContent.complaint.feedbackId;
-  } else {
-    context.done(null,'');
-  }
-  var SesMessageTimestamp = MessageContent.mail.timestamp;
-  var SesMessageId = MessageContent.mail.messageId;
+  parseMessageContent(null, MessageContent, putSuppressedItem);
 
-  var itemParams = {
-    Item: {
-      SesFailedTarget: {S: SesFailedTarget},
-      SesMessageTimestamp: {S: SesMessageTimestamp},
-      SesMessageId: {S: SesMessageId},
-      SesNotificationType: {S: SesNotify},
-      SesError: {S: SesFailedCode},
-      SesNotificationTimestamp: {S: SesNotificationTimestamp},
-      SesNotificationfeedbackId: {S: SesNotificationfeedbackId},
-      SnsMessage: {S: SnsMessage}
-    }
-  };
 
-  ddb.putItem(itemParams, function(err, data) {
-    if (err) {
-        console.log('error','putting item into dynamodb failed: '+err);
+  function parseMessageContent(err, message, callback) {
+    var items = [];
+    if (message.notificationType == "Bounce") {
+      for(var i=0, len=message.bounce.bouncedRecipients.length; i<len; i++ ) {
+        items[i] = {
+          Item: {
+            SesFailedTarget: {S: sanitizeEmail(message.bounce.bouncedRecipients[i].emailAddress)},
+            SesMessageTimestamp: {S: message.mail.timestamp},
+            SesMessageId: {S: message.mail.messageId},
+            SesNotificationType: {S: message.notificationType},
+            SesError: {S: message.bounce.bouncedRecipients[i].diagnosticCode},
+            SesNotificationTimestamp: {S: message.bounce.timestamp},
+            SesNotificationfeedbackId: {S: message.bounce.feedbackId},
+            SnsMessage: {S: message}
+          }
+        };
+      }
+      callback(items);
+    } else if (message.notificationType == "Complaint") {
+      for(var i=0, len=message.complaint.complainedRecipients.length; i<len; i++ ) {
+        items[i] = {
+          Item: {
+            SesFailedTarget: {S: sanitizeEmail(message.complaint.complainedRecipients[i].emailAddress)},
+            SesMessageTimestamp: {S: message.mail.timestamp},
+            SesMessageId: {S: message.mail.messageId},
+            SesNotificationType: {S: message.notificationType},
+            SesError: {S: message.complaint.complaintFeedbackType},
+            SesNotificationTimestamp: {S: message.bounce.timestamp},
+            SesNotificationfeedbackId: {S: message.bounce.feedbackId},
+            SnsMessage: {S: message}
+          }
+        };
+      }
+      callback(items);
+    } else {
+      context.done(null,'');
     }
-    else {
-        console.log('great success: '+JSON.stringify(data, null, '  '));
-        context.done(null,'');
+  } //parseMessageContent
+
+  function stripThans(item, callback) {
+    if(item.indexOf('<')==0 && item.indexOf('>')==item.length-1) {
+      item=item.substring(1,item.length-1);
     }
-  });
+    return item;
+  } //stripThans
+
+  function sanitizeEmail(item, callback) {
+    item=stripThans(getEmails(item));
+    return item;
+  } //sanitizeEmails
+
+  function putSuppressedItem(items, callback) {
+    for(var j=0, lenj=items.length; j<lenj; j++) {
+      ddb.putItem(item[j], function(err,data) {
+        if (err) {
+          console.log('error','putting item in dynamodb failed: '+err);
+        } else {
+          console.log('great success: '+JSON.stringify(data, null, '  '));
+          context.done(null,'');
+        }
+      });
+    }
+  } //putSuppressedItem
+
 };
