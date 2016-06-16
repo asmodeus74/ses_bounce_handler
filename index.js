@@ -11,8 +11,10 @@ exports.handler = function(event, context) {
 
 
   function parseMessageContent(err, message, callback) {
+    console.log("parseMessageContent");   //DEBUG
     var items = [];
     if (message.notificationType == "Bounce") {
+      console.log("Bounce");    //DEBUG
       for(var i=0, len=message.bounce.bouncedRecipients.length; i<len; i++ ) {
         items[i] = {
           Item: {
@@ -29,6 +31,7 @@ exports.handler = function(event, context) {
       }
       callback(items);
     } else if (message.notificationType == "Complaint") {
+      console.log("Complaint");   //DEBUG
       for(var i=0, len=message.complaint.complainedRecipients.length; i<len; i++ ) {
         items[i] = {
           Item: {
@@ -45,11 +48,13 @@ exports.handler = function(event, context) {
       }
       callback(items);
     } else {
+      console.log("No Bounce, No Complaint");   //DEBUG
       context.done(null,'');
     }
   } //parseMessageContent
 
   function stripThans(item, callback) {
+    console.log("stripThans: "+item);   //DEBUG
     if(item.indexOf('<')==0 && item.indexOf('>')==item.length-1) {
       item=item.substring(1,item.length-1);
     }
@@ -57,6 +62,7 @@ exports.handler = function(event, context) {
   } //stripThans
 
   function sanitizeEmail(item, callback) {
+    console.log("sanitizeEmail: "+item);
     item=stripThans(getEmails(item));
     return item;
   } //sanitizeEmails
