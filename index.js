@@ -69,6 +69,7 @@ exports.handler = function(event, context) {
 
   function putSuppressedItem(items, callback) {
     for(var j=0, lenj=items.length; j<lenj; j++) {
+      console.log("putItem: "+items[j]);    //DEBUG
       ddb.putItem(items[j], function(err,data) {
         if (err) {
           console.log('error','putting item in dynamodb failed: '+err);
