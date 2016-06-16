@@ -64,7 +64,7 @@ exports.handler = function(event, context) {
   function sanitizeEmail(item, callback) {
     console.log("sanitizeEmail: "+item);
     item=stripThans(getEmails(item));
-    return item;
+    return item[0];
   } //sanitizeEmails
 
   function putSuppressedItem(items, callback) {
