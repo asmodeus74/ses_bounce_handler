@@ -65,7 +65,7 @@ exports.handler = function(event, context) {
 
   function sanitizeEmail(item, callback) {
     console.log("sanitizeEmail: "+item);
-    item=stripThans(getEmails(item));
+    item=stripThans(getEmails(item)[0]);  //getEmails returns array, but we're only feeding single recipients
     return item[0];
   } //sanitizeEmails
 

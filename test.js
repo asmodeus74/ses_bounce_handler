@@ -1,19 +1,32 @@
 console.log("Start test:\r\n");
 var getEmails = require('get-emails');
-var text = '<orma@statoilhydro.com> "BounceSimulator" <bounce@simulator.amazonses.com> "BounceSimulator" <bounce@simulator.amazonses.com> kjeppeson@bis.tepsco.com one+two@gmail.com';
+var emails = ["<orma@statoilhydro.com>", "'BounceSimulator' <bounce@simulator.amazonses.com>", "'BounceSimulator' <bounce@simulator.amazonses.com>", "kjeppeson@bis.tepsco.com", "one+two@gmail.com"];
 
-var results = getEmails(text);
-
-for(var i=0, len=results.length; i<len; i++) {
-  results[i]=stripThans(results[i]);
+for(var i=0, len=emails.length; i<len; i++) {
+  email=stripThans(getEmails(emails[i])[0]);
+  console.log("Email: "+email);
 }
 //results.forEach(stripThans);
 
 function stripThans(item) {
+  console.log("item: "+item);
   if(item.indexOf('<')==0 && item.indexOf('>')==item.length-1) {
     item=item.substring(1,item.length-1);
   }
   return item;
 }
 
-console.log(results);
+/*
+var itemParams = {
+  Item: {
+    SesFailedTarget: {S: SesFailedTarget},
+    SesMessageTimestamp: {S: SesMessageTimestamp},
+    SesMessageId: {S: SesMessageId},
+    SesNotificationType: {S: SesNotify},
+    SesError: {S: SesFailedCode},
+    SesNotificationTimestamp: {S: SesNotificationTimestamp},
+    SesNotificationfeedbackId: {S: SesNotificationfeedbackId},
+    SnsMessage: {S: SnsMessage}
+  }
+};
+*/
