@@ -3,13 +3,15 @@ var ddb = new aws.DynamoDB({params: {TableName: 'SesSuppressionList'}});
 var getEmails = require('get-emails');
 
 exports.handler = function(event, context) {
-  var SnsMessage = event.Records[0].Sns.Message;
-  var LambdaReceiveTime = new Date().toString();
-  var MessageContent = JSON.parse(SnsMessage);
+  var MessageContent = JSON.parse(event.Records[0].Sns.Message);
   //console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
+
+  // This starts the process. Calls parse function to get data from SNS message with the
+  // DynamoDB put function as the callback.
   parseMessageContent(null, MessageContent, putSuppressedItem);
 
-
+  // parseMessageContent builds the JSON for the DynamoDB put function based on
+  // if the event is a Bounce, a Complaint, or both and retreives multiple email addresses.
   function parseMessageContent(err, message, callback) {
     var items = [];
     if (message.notificationType == "Bounce") {
@@ -49,6 +51,7 @@ exports.handler = function(event, context) {
     }
   } //parseMessageContent
 
+  // If email is of the format <auser@domain.com> this will return auser@domain.com
   function stripThans(item, callback) {
     if(item.indexOf('<')==0 && item.indexOf('>')==item.length-1) {
       item=item.substring(1,item.length-1);
@@ -56,11 +59,13 @@ exports.handler = function(event, context) {
     return item;
   } //stripThans
 
+  // If email is of the format ""'Firstname Lastname' <auser@domain.com>" this will return only <auser@domain.com>
   function sanitizeEmail(item, callback) {
     item=stripThans(getEmails(item)[0]);  //getEmails returns array, but we're only feeding single recipients
     return item;
   } //sanitizeEmails
 
+  //Receives an array of items from parseMessageContent and puts them in SesSuppressionList table.
   function putSuppressedItem(items, callback) {
     for(var j=0, lenj=items.length; j<lenj; j++) {
       ddb.putItem(items[j], function(err,data) {
