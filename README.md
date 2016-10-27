@@ -27,4 +27,4 @@ between the types of bounce and adds all to the suppression list.
 # Credits
 By no means did I come  up with this myself. I simply expanded upon an already excellent idea. The link to the original post is 
 below, which also includes step by step instructions for the SNS, SES, DDB, and IAM services that need to be configured.
-[https://help.github.com/articles/basic-writing-and-formatting-syntax/](https://help.github.com/articles/basic-writing-and-formatting-syntax/)
+[http://www.mitchyb.com/2015/05/my-first-lambda-function.html](http://www.mitchyb.com/2015/05/my-first-lambda-function.html)
