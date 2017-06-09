@@ -4,7 +4,7 @@ var getEmails = require('get-emails');
 
 exports.handler = function(event, context) {
   var MessageContent = JSON.parse(event.Records[0].Sns.Message);
-  //console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
+  console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
 
   // This starts the process. Calls parse function to get data from SNS message with the
   // DynamoDB put function as the callback.
@@ -70,7 +70,9 @@ exports.handler = function(event, context) {
     for(var j=0, lenj=items.length; j<lenj; j++) {
       ddb.putItem(items[j], function(err,data) {
         if (err) {
+          console.log('Item: '+items[j]); //DEBUG
           console.log('error','putting item in dynamodb failed: '+err);
+          context.done(null,'');
         } else {
           console.log('great success: '+JSON.stringify(data, null, '  '));
           context.done(null,'');
