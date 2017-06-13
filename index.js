@@ -3,8 +3,9 @@ var ddb = new aws.DynamoDB({params: {TableName: 'SesSuppressionList'}});
 var getEmails = require('get-emails');
 
 exports.handler = function(event, context) {
+  console.log("Received Event: "+JSON.stringify(event, null, 2)); //DEBUG
   var MessageContent = JSON.parse(event.Records[0].Sns.Message);
-  console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
+//  console.log("MessageContent: "+JSON.stringify(MessageContent, null, 2));      //DEBUG
 
   // This starts the process. Calls parse function to get data from SNS message with the
   // DynamoDB put function as the callback.
@@ -56,17 +57,20 @@ exports.handler = function(event, context) {
     if(item.indexOf('<')==0 && item.indexOf('>')==item.length-1) {
       item=item.substring(1,item.length-1);
     }
+    console.log("stripThans: "+item); //DEBUG
     return item;
   } //stripThans
 
   // If email is of the format ""'Firstname Lastname' <auser@domain.com>" this will return only <auser@domain.com>
   function sanitizeEmail(item, callback) {
     item=stripThans(getEmails(item)[0]);  //getEmails returns array, but we're only feeding single recipients
+    console.log("sanitizeEmail: "+item);  //DEBUG
     return item;
   } //sanitizeEmails
 
   //Receives an array of items from parseMessageContent and puts them in SesSuppressionList table.
   function putSuppressedItem(items, callback) {
+    console.log("putSuppressedItem items.length: "+items.length);   //DEBUG
     for(var j=0, lenj=items.length; j<lenj; j++) {
       ddb.putItem(items[j], function(err,data) {
         if (err) {
