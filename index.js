@@ -70,7 +70,7 @@ exports.handler = function(event, context) {
     for(var j=0, lenj=items.length; j<lenj; j++) {
       ddb.putItem(items[j], function(err,data) {
         if (err) {
-          console.log('Item: '+items[j]); //DEBUG
+          console.log('Item: '+JSON.stringify(items[j], null, 2)); //DEBUG
           console.log('error','putting item in dynamodb failed: '+err);
           context.done(null,'');
         } else {
