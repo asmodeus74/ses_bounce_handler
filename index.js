@@ -72,6 +72,7 @@ exports.handler = function(event, context) {
   function putSuppressedItem(items, callback) {
     console.log("putSuppressedItem items.length: "+items.length);   //DEBUG
     for(var j=0, lenj=items.length; j<lenj; j++) {
+      console.log("items["+j+"]: "+JSON.stringify(items[j], null, 2));  //DEBUG
       ddb.putItem(items[j], function(err,data) {
         if (err) {
           console.log('Item: '+JSON.stringify(items[j], null, 2)); //DEBUG
