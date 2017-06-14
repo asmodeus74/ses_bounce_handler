@@ -27,9 +27,9 @@ exports.handler = function(event, context) {
             SesNotificationfeedbackId: {S: message.bounce.feedbackId},
             SnsMessage: {S: JSON.stringify(message, null, 2)}
           }
-          // diagnosticCode is optional, only add SesError to Item if it exists.
-          if(message.bounce.bouncedRecipients[i].diagnosticCode) Item.SesError = {S: message.bounce.bouncedRecipients[i].diagnosticCode};
         };
+        // diagnosticCode is optional, only add SesError to Item if it exists.
+        if(message.bounce.bouncedRecipients[i].diagnosticCode) items[i].Item.SesError = {S: message.bounce.bouncedRecipients[i].diagnosticCode};
       }
       callback(items);
     } else if (message.notificationType == "Complaint") {
