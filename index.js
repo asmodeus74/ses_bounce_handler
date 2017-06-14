@@ -23,11 +23,12 @@ exports.handler = function(event, context) {
             SesMessageTimestamp: {S: message.mail.timestamp},
             SesMessageId: {S: message.mail.messageId},
             SesNotificationType: {S: message.notificationType},
-            SesError: {S: message.bounce.bouncedRecipients[i].diagnosticCode || null},
             SesNotificationTimestamp: {S: message.bounce.timestamp},
             SesNotificationfeedbackId: {S: message.bounce.feedbackId},
             SnsMessage: {S: JSON.stringify(message, null, 2)}
           }
+          // diagnosticCode is optional, only add SesError to Item if it exists.
+          if(message.bounce.bouncedRecipients[i].diagnosticCode) Item.SesError = {S: message.bounce.bouncedRecipients[i].diagnosticCode};
         };
       }
       callback(items);
