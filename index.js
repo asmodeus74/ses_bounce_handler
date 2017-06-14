@@ -16,22 +16,24 @@ exports.handler = function(event, context) {
   function parseMessageContent(err, message, callback) {
     var items = [];
     if (message.notificationType == "Bounce") {
-      for(var i=0, len=message.bounce.bouncedRecipients.length; i<len; i++ ) {
-        items[i] = {
-          Item: {
-            SesFailedTarget: {S: sanitizeEmail(message.bounce.bouncedRecipients[i].emailAddress)},
-            SesMessageTimestamp: {S: message.mail.timestamp},
-            SesMessageId: {S: message.mail.messageId},
-            SesNotificationType: {S: message.notificationType},
-            SesNotificationTimestamp: {S: message.bounce.timestamp},
-            SesNotificationfeedbackId: {S: message.bounce.feedbackId},
-            SnsMessage: {S: JSON.stringify(message, null, 2)}
-          }
-        };
-        // diagnosticCode is optional, only add SesError to Item if it exists.
-        if(message.bounce.bouncedRecipients[i].diagnosticCode) items[i].Item.SesError = {S: message.bounce.bouncedRecipients[i].diagnosticCode};
+      if(message.bounce.bounceType != "Transient") {  // Transient bounces can be tried again in the future.
+        for(var i=0, len=message.bounce.bouncedRecipients.length; i<len; i++ ) {
+          items[i] = {
+            Item: {
+              SesFailedTarget: {S: sanitizeEmail(message.bounce.bouncedRecipients[i].emailAddress)},
+              SesMessageTimestamp: {S: message.mail.timestamp},
+              SesMessageId: {S: message.mail.messageId},
+              SesNotificationType: {S: message.notificationType},
+              SesNotificationTimestamp: {S: message.bounce.timestamp},
+              SesNotificationfeedbackId: {S: message.bounce.feedbackId},
+              SnsMessage: {S: JSON.stringify(message, null, 2)}
+            }
+          };
+          // diagnosticCode is optional, only add SesError to Item if it exists.
+          if(message.bounce.bouncedRecipients[i].diagnosticCode) items[i].Item.SesError = {S: message.bounce.bouncedRecipients[i].diagnosticCode};
+        }
+        callback(items);
       }
-      callback(items);
     } else if (message.notificationType == "Complaint") {
       for(var i=0, len=message.complaint.complainedRecipients.length; i<len; i++ ) {
         items[i] = {
@@ -40,15 +42,17 @@ exports.handler = function(event, context) {
             SesMessageTimestamp: {S: message.mail.timestamp},
             SesMessageId: {S: message.mail.messageId},
             SesNotificationType: {S: message.notificationType},
-            SesError: {S: message.complaint.complaintFeedbackType},
             SesNotificationTimestamp: {S: message.complaint.timestamp},
             SesNotificationfeedbackId: {S: message.complaint.feedbackId},
             SnsMessage: {S: JSON.stringify(message, null, 2)}
           }
         };
+        // complaintFeedbackType is optional, only add SesError to Item if it exists.
+        if(message.complaint.complaintFeedbackType) items[i].Item.SesError = {S: message.complaint.complaintFeedbackType};
       }
       callback(items);
     } else {
+      console.log("Nothing to do: EOL");
       context.done(null,'');
     }
   } //parseMessageContent
